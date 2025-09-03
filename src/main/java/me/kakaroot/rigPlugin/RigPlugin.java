@@ -1,6 +1,7 @@
 package me.kakaroot.rigPlugin;
 
 import me.kakaroot.rigPlugin.commands.RigCommand;
+import me.kakaroot.rigPlugin.listeners.ChestBreakListener;
 import me.kakaroot.rigPlugin.listeners.WandListener;
 import me.kakaroot.rigPlugin.managers.*;
 import org.bukkit.plugin.PluginManager;
@@ -55,6 +56,7 @@ public final class RigPlugin extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new WandListener(this), this);
         pm.registerEvents(GUIManager.getListener(), this);
+        pm.registerEvents(new ChestBreakListener(this),this);
     }
 
     private void logStartup() {

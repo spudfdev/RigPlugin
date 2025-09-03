@@ -6,6 +6,8 @@ import me.kakaroot.rigPlugin.managers.MsgManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class SaveRigCommand implements SubCommand {
 
     private final RigPlugin plugin;
@@ -49,5 +51,10 @@ public class SaveRigCommand implements SubCommand {
         MsgManager.send(p, "&aRig '&6" + rigName + "&a' saved successfully.");
 
         return true;
+    }
+
+    @Override
+    public List<String> getPermissions() {
+        return List.of("rig.save");
     }
 }

@@ -2,6 +2,7 @@ package me.kakaroot.rigPlugin.inventories;
 
 import me.kakaroot.rigPlugin.inventories.Guards.ViewGuardsInventory;
 import me.kakaroot.rigPlugin.managers.GUIManager;
+import me.kakaroot.rigPlugin.managers.MsgManager;
 import me.kakaroot.rigPlugin.managers.RigManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -36,7 +37,7 @@ public class EditRigInventory {
         }
         gui.addItem(0, rename);
         gui.setClickAction(0, (p, e) -> {
-            p.sendMessage("Renaming rig: " + rigName);
+            MsgManager.send(p,"(todo add chat prompts) Renaming rig: " + rigName);
             // Open rename input (maybe a chat prompt)
         });
 
@@ -49,7 +50,7 @@ public class EditRigInventory {
         }
         gui.addItem(1, delete);
         gui.setClickAction(1, (p, e) -> {
-            p.sendMessage("Deleting rig: " + rigName);
+            MsgManager.send(p,"Deleting rig: " + rigName);
             rigManager.deleteRig(rigName);
             viewRigsInventory.open(player);
         });
@@ -63,7 +64,7 @@ public class EditRigInventory {
         }
         gui.addItem(2, editLoot);
         gui.setClickAction(2, (p, e) -> {
-            p.sendMessage("Editing loot for rig: " + rigName);
+            MsgManager.send(p,"Editing loot for rig: " + rigName);
             // Open LootEditorInventory
             LootEditorInventory.open(p,rigName,rigManager);
         });
@@ -77,7 +78,7 @@ public class EditRigInventory {
         }
         gui.addItem(3, editGuards);
         gui.setClickAction(3, (p, e) -> {
-            p.sendMessage("Viewing guards for rig: " + rigName);
+            MsgManager.send(p,"Viewing guards for rig: " + rigName);
             ViewGuardsInventory.open(p,rigName,rigManager);
         });
 
@@ -98,11 +99,11 @@ public class EditRigInventory {
 
             if (e.getClick().isLeftClick()) {
                 rigManager.setFrequency(rigName, current + 5);
-                p.sendMessage("§aRig frequency for " + rigName + " increased to " + (current + 5) + " minutes.");
+                MsgManager.send(p,"§aRig frequency for " + rigName + " increased to " + (current + 5) + " minutes.");
             } else if (e.getClick().isRightClick()) {
                 int newVal = Math.max(5, current - 5); // don’t go below 5 minutes
                 rigManager.setFrequency(rigName, newVal);
-                p.sendMessage("§cRig frequency for " + rigName + " decreased to " + newVal + " minutes.");
+                MsgManager.send(p,"§cRig frequency for " + rigName + " decreased to " + newVal + " minutes.");
             }
 
             open(player, rigName); // Refresh GUI to show updated value

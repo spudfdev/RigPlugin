@@ -82,7 +82,7 @@ public class LootEditorInventory {
                         updated = true;
                     } else if (e.getClick() == ClickType.DROP) {
                         rigManager.removeLoot(rigName, rarity, currentEntry);
-                        p.sendMessage("§cRemoved " + matName + " from " + rarity + " loot.");
+                        MsgManager.send(p,"&cRemoved " + matName + " from " + rarity + " loot.");
                         open(player, rigName, rigManager);
                         return;
                     }
@@ -94,7 +94,7 @@ public class LootEditorInventory {
                         list.add(newEntry);
                         rigManager.updateLoot(rigName, rarity, list);
 
-                        p.sendMessage("§aUpdated " + matName + " to " + min + "-" + max);
+                        MsgManager.send(p,"&aUpdated " + matName + " to " + min + "-" + max);
                         open(player, rigName,rigManager); // refresh
                     }
                 });

@@ -1,6 +1,7 @@
 package me.kakaroot.rigPlugin.inventories.Guards;
 
 import me.kakaroot.rigPlugin.managers.GUIManager;
+import me.kakaroot.rigPlugin.managers.MsgManager;
 import me.kakaroot.rigPlugin.managers.RigManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -73,7 +74,7 @@ public class EditGuardInventory {
         }
         gui.addItem(14, rename);
         gui.setClickAction(0, (p, e) -> {
-            p.sendMessage("Renaming guard: " + rigName);
+            MsgManager.send(p,"Renaming guard: " + rigName);
             // Open rename input (maybe a chat prompt)
         });
 

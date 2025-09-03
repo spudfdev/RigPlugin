@@ -53,16 +53,16 @@ public class ViewRigsInventory {
 
                 if (click.isLeftClick()) {
                     // Start the rig
-                    p.sendMessage("Starting rig: " + rigName);
+                    MsgManager.send(p,"Starting rig: " + rigName);
                     heistManager.startHeist(rigName);
                 } else if (click.isRightClick()) {
                     if (click == ClickType.SHIFT_RIGHT) {
                         // Warp to first chest
                         if (!rigManager.getChests(rigName).isEmpty()) {
                             p.teleport(rigManager.getChests(rigName).getFirst());
-                            p.sendMessage("§aWarped to rig: " + rigName);
+                            MsgManager.send(p,"§aWarped to rig: " + rigName);
                         } else {
-                            p.sendMessage("§cNo chests found for this rig!");
+                            MsgManager.send(p,"§cNo chests found for this rig!");
                         }
                     } else {
                         // Edit rig

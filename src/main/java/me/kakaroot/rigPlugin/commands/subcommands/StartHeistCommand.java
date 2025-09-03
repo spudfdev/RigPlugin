@@ -5,6 +5,8 @@ import me.kakaroot.rigPlugin.commands.SubCommand;
 import me.kakaroot.rigPlugin.managers.MsgManager;
 import org.bukkit.command.CommandSender;
 
+import java.util.List;
+
 public class StartHeistCommand implements SubCommand {
 
     private final RigPlugin plugin;
@@ -46,5 +48,10 @@ public class StartHeistCommand implements SubCommand {
         MsgManager.send(sender, "&aHeist started for rig '&6" + rigName + "&a'!");
 
         return true;
+    }
+
+    @Override
+    public List<String> getPermissions() {
+        return List.of("rig.start");
     }
 }

@@ -7,6 +7,8 @@ import me.kakaroot.rigPlugin.managers.MsgManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class MenuCommand implements SubCommand {
 
     private final RigPlugin plugin;
@@ -41,5 +43,10 @@ public class MenuCommand implements SubCommand {
         ViewRigsInventory viewRigsInventory = new ViewRigsInventory(plugin.getRigManager(), plugin.getHeistManager());
         viewRigsInventory.open(p);
         return true;
+    }
+
+    @Override
+    public List<String> getPermissions() {
+        return List.of("rig.menu");
     }
 }
