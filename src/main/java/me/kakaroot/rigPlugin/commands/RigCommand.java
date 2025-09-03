@@ -1,0 +1,51 @@
+package me.kakaroot.rigPlugin.commands;
+
+import me.kakaroot.rigPlugin.RigPlugin;
+import me.kakaroot.rigPlugin.commands.subcommands.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+public class RigCommand implements CommandExecutor {
+
+    private final Map<String, SubCommand> subCommands = new HashMap<>();
+
+    public RigCommand(RigPlugin plugin) {
+        register(new GetWandCommand());
+        register(new SaveRigCommand(plugin));
+        register(new StartHeistCommand(plugin));
+        register(new HelpCommand());
+        register(new MenuCommand(plugin));
+    }
+
+    private void register(SubCommand subCommand) {
+        subCommands.put(subCommand.getName().toLowerCase(), subCommand);
+    }
+
+    public Collection<SubCommand> getSubCommands() {
+        return subCommands.values();
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (args.length == 0) {
+            subCommands.get("menu").execute(sender, args);
+            return true;
+        }
+
+        SubCommand sub = subCommands.get(args[0].toLowerCase());
+        if (sub == null) {
+            sender.sendMessage("&cUnknown subcommand. Try /rig help");
+            return true;
+        }
+
+        String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
+        return sub.execute(sender, subArgs);
+    }
+
+}
