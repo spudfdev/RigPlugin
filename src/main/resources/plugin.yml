@@ -1,0 +1,11 @@
+name: RigPlugin
+version: '1.0'
+main: me.kakaroot.rigPlugin.RigPlugin
+api-version: '1.21'
+
+commands:
+  rig:
+    description: Main plugin command
+    usage: rig <sub-command>
+    aliases: [r]
+
