@@ -24,7 +24,7 @@ public class MenuCommand implements SubCommand {
 
     @Override
     public String getDescription() {
-        return "Opens the rigs menu";
+        return "Opens the rig menu";
     }
 
     @Override

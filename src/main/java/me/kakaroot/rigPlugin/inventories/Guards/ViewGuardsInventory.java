@@ -43,16 +43,12 @@ public class ViewGuardsInventory {
 
             gui.addItem(slot, item);
 
-            // Capture the index for the lambda
             int guardIndex = slot;
             gui.setClickAction(slot, (p, e) -> {
-                // Open the edit GUI for this guard
                 EditGuardInventory.open(p, rigName, guardIndex, rigManager);
             });
-
             slot++;
         }
-
         gui.open(player);
     }
 }

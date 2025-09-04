@@ -64,6 +64,23 @@ public class RigManager {
         saveConfig();
     }
 
+    public void setName(String oldRigName, String newRigName) {
+        if (rigsConfig.getConfigurationSection("rigs." + oldRigName) == null) {
+            return;
+        }
+
+        Map<String, Object> oldData = rigsConfig.getConfigurationSection("rigs." + oldRigName).getValues(true);
+
+        for (Map.Entry<String, Object> entry : oldData.entrySet()) {
+            rigsConfig.set("rigs." + newRigName + "." + entry.getKey(), entry.getValue());
+        }
+
+        rigsConfig.set("rigs." + oldRigName, null);
+
+        saveConfig();
+    }
+
+
     public long getLastStart(String rigName) {
         return rigsConfig.getLong("rigs." + rigName + ".lastStart", 0L);
     }

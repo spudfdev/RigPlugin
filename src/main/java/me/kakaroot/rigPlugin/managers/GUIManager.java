@@ -11,7 +11,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +47,7 @@ public class GUIManager implements InventoryHolder {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(name);
-            meta.setLore(Arrays.asList(loreLines)); // converts all strings to a list
+            meta.setLore(Arrays.asList(loreLines));
             item.setItemMeta(meta);
         }
         return item;
@@ -107,7 +106,7 @@ public class GUIManager implements InventoryHolder {
             Inventory inv = e.getInventory();
             if (inv.getHolder() instanceof GUIManager) {
                 GUIManager gui = (GUIManager) inv.getHolder();
-                // Handle inventory close if needed
+                // TODO handle close events
             }
         }
     }

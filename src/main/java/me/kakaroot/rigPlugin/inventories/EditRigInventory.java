@@ -1,6 +1,8 @@
 package me.kakaroot.rigPlugin.inventories;
 
+import me.kakaroot.rigPlugin.RigPlugin;
 import me.kakaroot.rigPlugin.inventories.Guards.ViewGuardsInventory;
+import me.kakaroot.rigPlugin.managers.ChatPromptManager;
 import me.kakaroot.rigPlugin.managers.GUIManager;
 import me.kakaroot.rigPlugin.managers.MsgManager;
 import me.kakaroot.rigPlugin.managers.RigManager;
@@ -37,8 +39,13 @@ public class EditRigInventory {
         }
         gui.addItem(0, rename);
         gui.setClickAction(0, (p, e) -> {
-            MsgManager.send(p,"(todo add chat prompts) Renaming rig: " + rigName);
-            // Open rename input (maybe a chat prompt)
+            MsgManager.send(p, "Renaming rig: " + rigName);
+            ChatPromptManager promptManager = new ChatPromptManager(RigPlugin.getInstance());
+            promptManager.promptPlayer(p, "Enter a new name for this rig:", input -> {
+                rigManager.setName(rigName, input); // pass old + new name
+                MsgManager.send(p, "Rig renamed to: " + input);
+                open(player, input); // re-open with new name
+            });
         });
 
         // Delete button
@@ -50,12 +57,12 @@ public class EditRigInventory {
         }
         gui.addItem(1, delete);
         gui.setClickAction(1, (p, e) -> {
-            MsgManager.send(p,"Deleting rig: " + rigName);
+            MsgManager.send(p, "Deleting rig: " + rigName);
             rigManager.deleteRig(rigName);
             viewRigsInventory.open(player);
         });
 
-        // Placeholder for Edit Loot button
+        // Edit Loot button
         ItemStack editLoot = GUIManager.createItem(Material.CHEST, "Edit Loot");
         ItemMeta lootMeta = editLoot.getItemMeta();
         if (lootMeta != null) {
@@ -64,12 +71,11 @@ public class EditRigInventory {
         }
         gui.addItem(2, editLoot);
         gui.setClickAction(2, (p, e) -> {
-            MsgManager.send(p,"Editing loot for rig: " + rigName);
-            // Open LootEditorInventory
-            LootEditorInventory.open(p,rigName,rigManager);
+            MsgManager.send(p, "Editing loot for rig: " + rigName);
+            LootEditorInventory.open(p, rigName, rigManager);
         });
 
-        // Placeholder for Edit Guards button
+        // Edit Guards button
         ItemStack editGuards = GUIManager.createItem(Material.IRON_SWORD, "Edit Guards");
         ItemMeta guardMeta = editGuards.getItemMeta();
         if (guardMeta != null) {
@@ -78,11 +84,11 @@ public class EditRigInventory {
         }
         gui.addItem(3, editGuards);
         gui.setClickAction(3, (p, e) -> {
-            MsgManager.send(p,"Viewing guards for rig: " + rigName);
-            ViewGuardsInventory.open(p,rigName,rigManager);
+            MsgManager.send(p, "Viewing guards for rig: " + rigName);
+            ViewGuardsInventory.open(p, rigName, rigManager);
         });
 
-        // Button to edit frequency
+        // Frequency button
         ItemStack freqButton = GUIManager.createItem(Material.CLOCK, "Edit Frequency");
         ItemMeta freqMeta = freqButton.getItemMeta();
         if (freqMeta != null) {
@@ -99,19 +105,15 @@ public class EditRigInventory {
 
             if (e.getClick().isLeftClick()) {
                 rigManager.setFrequency(rigName, current + 5);
-                MsgManager.send(p,"§aRig frequency for " + rigName + " increased to " + (current + 5) + " minutes.");
+                MsgManager.send(p, "§aRig frequency for " + rigName + " increased to " + (current + 5) + " minutes.");
             } else if (e.getClick().isRightClick()) {
-                int newVal = Math.max(5, current - 5); // don’t go below 5 minutes
+                int newVal = Math.max(5, current - 5);
                 rigManager.setFrequency(rigName, newVal);
-                MsgManager.send(p,"§cRig frequency for " + rigName + " decreased to " + newVal + " minutes.");
+                MsgManager.send(p, "§cRig frequency for " + rigName + " decreased to " + newVal + " minutes.");
             }
 
-            open(player, rigName); // Refresh GUI to show updated value
+            open(player, rigName); // Refresh GUI
         });
-
-
-
-
 
         gui.open(player);
     }

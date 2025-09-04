@@ -7,8 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 public class GetWandCommand implements SubCommand {
@@ -20,7 +19,7 @@ public class GetWandCommand implements SubCommand {
 
     @Override
     public String getDescription() {
-        return "Gives you wand for making rig";
+        return "Gives wand for making rig";
     }
 
     @Override
@@ -36,15 +35,18 @@ public class GetWandCommand implements SubCommand {
             return true;
         }
 
+        p.getInventory().addItem(getRigWand());
+        MsgManager.send(p,"&aYou received the Rig Wand!");
+        return true;
+    }
+
+    private ItemStack getRigWand() {
         ItemStack wand = new ItemStack(Material.BLAZE_ROD);
         ItemMeta meta = wand.getItemMeta();
         meta.setDisplayName(MsgManager.colourise("&6Rig Wand"));
-        meta.setLore(Collections.singletonList(MsgManager.colourise("&7Left=Chest Mark")));
+        meta.setLore(Arrays.asList("&7Left Click = Mark Chest", "Shift-Right Click = Open Menu"));
         wand.setItemMeta(meta);
-
-        p.getInventory().addItem(wand);
-        MsgManager.send(p,"&aYou received the Rig Wand!");
-        return true;
+        return wand;
     }
 
     @Override

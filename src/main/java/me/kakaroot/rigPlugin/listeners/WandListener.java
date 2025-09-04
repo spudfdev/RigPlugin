@@ -21,12 +21,12 @@ public class WandListener implements Listener {
 
     @EventHandler
     public void onWandUse(PlayerInteractEvent e) {
-        // Check for wand
         if (e.getItem() == null || e.getItem().getType() != Material.BLAZE_ROD) return;
         if (!e.getItem().hasItemMeta() || !e.getItem().getItemMeta().getDisplayName().contains("Rig Wand"))
             return;
 
         Player player = e.getPlayer();
+        if (!player.hasPermission("rig.wand")) return;
         Block clickedBlock = e.getClickedBlock();
         if (clickedBlock == null) return;
 
@@ -37,7 +37,7 @@ public class WandListener implements Listener {
         }
 
         if ((e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) && player.isSneaking()) {
-            e.setCancelled(true); // prevent default action
+            e.setCancelled(true);
             ViewRigsInventory viewRigsInventory = new ViewRigsInventory(plugin.getRigManager(),plugin.getHeistManager());
             viewRigsInventory.open(player);
         }

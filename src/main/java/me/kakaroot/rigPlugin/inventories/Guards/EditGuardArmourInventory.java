@@ -6,10 +6,21 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class EditGuardArmourInventory {
+
+    private static final List<String> ARMOUR_MATERIALS = Arrays.asList(
+            "AIR",
+            "LEATHER",
+            "CHAINMAIL",
+            "GOLDEN",
+            "IRON",
+            "DIAMOND",
+            "NETHERITE"
+    );
 
     public static void open(Player player, String rigName, int guardIndex, RigManager rigManager) {
         GUIManager gui = new GUIManager("Edit Armour", 6, player.getUniqueId());
@@ -20,10 +31,10 @@ public class EditGuardArmourInventory {
         String[] slots = {"HELMET", "CHESTPLATE", "LEGGINGS", "BOOTS"};
 
         for (int i = 0; i < slots.length; i++) {
-            int index = i; // effectively final for lambda
+            int index = i;
             String currentPiece = index < armour.size() ? armour.get(index) : "AIR";
 
-            Material displayMaterial = materialFromString(currentPiece, slots[i]);
+            Material displayMaterial = materialFromString(currentPiece);
             ItemStack item = GUIManager.createItem(
                     displayMaterial,
                     "§a" + slots[i],
@@ -34,39 +45,40 @@ public class EditGuardArmourInventory {
             gui.addItem(i, item);
 
             gui.setClickAction(i, (p, e) -> {
-                // Get latest current value
                 String current = index < armour.size() ? armour.get(index) : "AIR";
                 String newPiece = getNextPiece(current, slots[index]);
 
-                if (armour.size() > index) armour.set(index, newPiece);
-                else armour.add(newPiece);
+                if (armour.size() > index) {
+                    armour.set(index, newPiece);
+                } else {
+                    armour.add(newPiece);
+                }
 
                 guard.put("armour", armour);
                 rigManager.updateGuardTemplate(rigName, guardIndex, guard);
 
-                // Refresh GUI to show updated state
-                open(player, rigName, guardIndex, rigManager);
+                open(player, rigName, guardIndex, rigManager); // refresh
             });
         }
-
         gui.open(player);
     }
 
     private static String getNextPiece(String current, String slot) {
-        if ("AIR".equals(current)) return "LEATHER_" + slot;
-        if (("LEATHER_" + slot).equals(current)) return "IRON_" + slot;
-        if (("IRON_" + slot).equals(current)) return "DIAMOND_" + slot;
-        return "AIR";
+        String base = current.equals("AIR") ? "AIR" : current.split("_")[0];
+
+        int currentIndex = ARMOUR_MATERIALS.indexOf(base);
+        int nextIndex = (currentIndex + 1) % ARMOUR_MATERIALS.size();
+
+        String nextBase = ARMOUR_MATERIALS.get(nextIndex);
+        return nextBase.equals("AIR") ? "AIR" : nextBase + "_" + slot;
     }
 
-
-    private static Material materialFromString(String str, String slot) {
-        if ("AIR".equals(str)) return Material.BARRIER; // show barrier instead of air
+    private static Material materialFromString(String str) {
+        if ("AIR".equals(str)) return Material.BARRIER;
         try {
-            return Material.valueOf(str); // directly use the string like "LEATHER_HELMET"
+            return Material.valueOf(str);
         } catch (IllegalArgumentException e) {
-            return Material.BARRIER; // fallback if material not found
+            return Material.BARRIER;
         }
     }
-
 }

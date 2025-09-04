@@ -45,7 +45,6 @@ public class SaveRigCommand implements SubCommand {
 
         String rigName = args[0];
 
-        // Save the rig using RigManager
         plugin.getRigManager().saveRig(p.getUniqueId(), rigName);
 
         MsgManager.send(p, "&aRig '&6" + rigName + "&a' saved successfully.");

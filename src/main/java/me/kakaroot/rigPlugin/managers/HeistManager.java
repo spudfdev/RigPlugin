@@ -11,7 +11,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-
 import java.util.*;
 
 public class HeistManager {
@@ -31,33 +30,26 @@ public class HeistManager {
 
 
         for (Location chestLoc : chests) {
-            // Save current facing (if the block is already a chest and has direction)
-            BlockFace facing = BlockFace.NORTH; // default fallback
+            BlockFace facing = BlockFace.NORTH;
             if (chestLoc.getBlock().getBlockData() instanceof Directional directional) {
                 facing = directional.getFacing();
             }
 
-            // Respawn chest
             chestLoc.getBlock().setType(Material.CHEST);
 
-            // Restore orientation
             if (chestLoc.getBlock().getBlockData() instanceof Directional newDirectional) {
                 newDirectional.setFacing(facing);
                 chestLoc.getBlock().setBlockData(newDirectional);
             }
 
-            // Get inventory and clear loot
             Chest chest = (Chest) chestLoc.getBlock().getState();
             Inventory inv = chest.getBlockInventory();
             inv.clear();
 
-            // Populate fresh loot
             populateLoot(inv, lootTable);
 
-            // Spawn guards
             spawnGuards(chestLoc, guardCount, guardRadius,rigName);
         }
-
     }
 
 
@@ -74,7 +66,7 @@ public class HeistManager {
                     Material mat = Material.getMaterial(matName.toUpperCase());
                     if (mat == null) {
                         System.out.println("Invalid material: " + matName);
-                        continue; // skip invalid materials
+                        continue;
                     }
 
                     ItemStack item = new ItemStack(mat, amount);
@@ -97,17 +89,14 @@ public class HeistManager {
             double dz = (random.nextDouble() * 2 - 1) * radius;
             Location spawnLoc = center.clone().add(dx, 0, dz);
 
-            // Pick a random template
             Map<?, ?> rawTemplate = templates.get(random.nextInt(templates.size()));
             Map<String, Object> template = (Map<String, Object>) rawTemplate;
 
-            // Get type, name, armour, weapon
             String typeStr = (String) template.getOrDefault("type", "ZOMBIE");
             String name = (String) template.getOrDefault("name", "Guard");
             List<String> armourList = (List<String>) template.getOrDefault("armour", Collections.emptyList());
             String weaponStr = (String) template.getOrDefault("weapon", null);
 
-            // Spawn entity
             EntityType type = EntityType.valueOf(typeStr.toUpperCase());
             if (!type.isAlive()) type = EntityType.ZOMBIE; // fallback
 
@@ -115,7 +104,6 @@ public class HeistManager {
             guard.setCustomName(name);
             guard.setCustomNameVisible(true);
 
-            // Equip armour
             for (String armourMat : armourList) {
                 Material mat = Material.getMaterial(armourMat.toUpperCase());
                 if (mat == null) continue;
@@ -128,7 +116,6 @@ public class HeistManager {
                 }
             }
 
-            // Equip weapon
             if (weaponStr != null) {
                 Material weapon = Material.getMaterial(weaponStr.toUpperCase());
                 if (weapon != null) guard.getEquipment().setItemInMainHand(new ItemStack(weapon));

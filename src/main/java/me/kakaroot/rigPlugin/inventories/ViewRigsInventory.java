@@ -28,7 +28,6 @@ public class ViewRigsInventory {
         UUID uuid = player.getUniqueId();
         GUIManager gui = new GUIManager("View Rigs", 6, uuid);
 
-        // Get all rig names
         Set<String> rigs = rigManager.getAllRigNames();
 
         int slot = 0;
@@ -52,7 +51,7 @@ public class ViewRigsInventory {
                 ClickType click = e.getClick();
 
                 if (click.isLeftClick()) {
-                    // Start the rig
+                    // Start heist
                     MsgManager.send(p,"Starting rig: " + rigName);
                     heistManager.startHeist(rigName);
                 } else if (click.isRightClick()) {
@@ -73,7 +72,7 @@ public class ViewRigsInventory {
             });
 
             slot++;
-            if (slot >= gui.getInventory().getSize()) break; // Stop if inventory full
+            if (slot >= gui.getInventory().getSize()) break;
         }
 
         gui.open(player);

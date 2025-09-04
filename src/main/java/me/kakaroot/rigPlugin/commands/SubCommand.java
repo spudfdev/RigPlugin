@@ -5,8 +5,8 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 
 public interface SubCommand {
-    String getName();        // subcommand name, e.g. "wand"
-    String getDescription(); // for help
+    String getName();        // subcommand name
+    String getDescription();
     String getUsage();       // usage string
     boolean execute(CommandSender sender, String[] args);
 

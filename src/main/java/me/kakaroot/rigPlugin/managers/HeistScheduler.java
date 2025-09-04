@@ -17,7 +17,7 @@ public class HeistScheduler {
     }
 
     public void start() {
-        if (taskId != -1) return; // already running
+        if (taskId != -1) return;
 
         taskId = Bukkit.getScheduler().runTaskTimer(plugin, this::startScheduledHeists, 0L, 20L * 60).getTaskId();
     }

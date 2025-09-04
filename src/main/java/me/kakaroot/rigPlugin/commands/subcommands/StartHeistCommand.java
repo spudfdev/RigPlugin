@@ -27,7 +27,7 @@ public class StartHeistCommand implements SubCommand {
 
     @Override
     public String getUsage() {
-        return "/rig start <rig-name>";
+        return "/rig start <rigName>";
     }
 
     @Override

@@ -103,14 +103,13 @@ public class LootEditorInventory {
             }
         }
 
-        // Empty slot = add new loot
+        // Add new loot slot
         ItemStack addButton = GUIManager.createItem(Material.EMERALD, "§aAdd Loot", "§7Drag an item here to add it");
         gui.addItem(53, addButton);
 
         gui.setClickAction(53, (p, e) -> {
             ItemStack cursor = e.getCursor();
             if (cursor.getType() != Material.AIR) {
-                // Add this item as loot with default range
                 String entry = cursor.getType().name() + ":1-1";
                 rigManager.addLoot(rigName, "common", entry);
                 MsgManager.send(p,"&aAdded " + cursor.getType().name() + " to loot!");
