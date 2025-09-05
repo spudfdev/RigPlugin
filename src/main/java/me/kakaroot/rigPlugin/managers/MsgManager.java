@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender;
 
 public class MsgManager {
 
-    private static String prefix;
+    public static String prefix;
 
     public static void init(RigPlugin plugin) {
         String raw = plugin.getConfig().getString("prefix", "&6[Rig] ");

@@ -6,6 +6,9 @@ import me.kakaroot.rigPlugin.managers.MsgManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+
+import java.io.IOException;
 import java.util.*;
 
 public class RigCommand implements CommandExecutor {
@@ -18,6 +21,7 @@ public class RigCommand implements CommandExecutor {
         register(new StartHeistCommand(plugin));
         register(new HelpCommand(this));
         register(new MenuCommand(plugin));
+        register(new RigReloadCommand(plugin));
     }
 
     private void register(SubCommand subCommand) {
@@ -36,7 +40,13 @@ public class RigCommand implements CommandExecutor {
                 MsgManager.send(sender, "&cYou don't have permission to open the menu.");
                 return true;
             }
-            return menu.execute(sender, args);
+            try {
+                return menu.execute(sender, args);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InvalidConfigurationException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         SubCommand sub = subCommands.get(args[0].toLowerCase());
@@ -51,7 +61,13 @@ public class RigCommand implements CommandExecutor {
         }
 
         String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
-        return sub.execute(sender, subArgs);
+        try {
+            return sub.execute(sender, subArgs);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InvalidConfigurationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

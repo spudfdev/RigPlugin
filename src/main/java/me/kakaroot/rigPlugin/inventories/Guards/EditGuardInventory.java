@@ -1,6 +1,7 @@
 package me.kakaroot.rigPlugin.inventories.Guards;
 
 import me.kakaroot.rigPlugin.RigPlugin;
+import me.kakaroot.rigPlugin.inventories.ViewRigsInventory;
 import me.kakaroot.rigPlugin.managers.ChatPromptManager;
 import me.kakaroot.rigPlugin.managers.GUIManager;
 import me.kakaroot.rigPlugin.managers.MsgManager;
@@ -37,7 +38,7 @@ public class EditGuardInventory {
     );
 
 
-    public static void open(Player player, String rigName, int guardIndex, RigManager rigManager) {
+    public static void open(Player player, String rigName, int guardIndex, RigManager rigManager, ViewRigsInventory viewRigsInventory) {
         GUIManager gui = new GUIManager("Edit Guard", 6, player.getUniqueId());
 
         Map<String, Object> guard = (Map<String, Object>) rigManager.getGuardTemplates(rigName).get(guardIndex);
@@ -51,14 +52,13 @@ public class EditGuardInventory {
         ItemStack typeItem = GUIManager.createItem(Material.NAME_TAG, "§aType: " + type, "§7Click to change type");
         gui.addItem(10, typeItem);
         gui.setClickAction(10, (p, e) -> {
-            // Cycle through the sword-capable types list
             int currentIndex = SWORD_CAPABLE_TYPES.indexOf(type.toUpperCase());
             int nextIndex = (currentIndex + 1) % SWORD_CAPABLE_TYPES.size();
             String newType = SWORD_CAPABLE_TYPES.get(nextIndex);
 
             guard.put("type", newType);
             rigManager.updateGuardTemplate(rigName, guardIndex, guard);
-            open(player, rigName, guardIndex, rigManager); // refresh
+            open(player, rigName, guardIndex, rigManager,viewRigsInventory); // refresh
         });
 
         // Change weapon button
@@ -71,7 +71,7 @@ public class EditGuardInventory {
 
             guard.put("weapon", newWeapon);
             rigManager.updateGuardTemplate(rigName, guardIndex, guard);
-            open(player, rigName, guardIndex, rigManager); // refresh
+            open(player, rigName, guardIndex, rigManager,viewRigsInventory);
         });
 
 
@@ -79,7 +79,7 @@ public class EditGuardInventory {
         ItemStack armourItem = GUIManager.createItem(Material.IRON_CHESTPLATE, "§aArmour", "§7Click to edit armour");
         gui.addItem(12, armourItem);
         gui.setClickAction(12, (p, e) -> {
-            EditGuardArmourInventory.open(player, rigName, guardIndex, rigManager);
+            EditGuardArmourInventory.open(player, rigName, guardIndex, rigManager, viewRigsInventory);
         });
 
         // Delete guard
@@ -87,7 +87,7 @@ public class EditGuardInventory {
         gui.addItem(13, deleteItem);
         gui.setClickAction(13, (p, e) -> {
             rigManager.removeGuardTemplate(rigName, guardIndex);
-            ViewGuardsInventory.open(player, rigName, rigManager);
+            ViewGuardsInventory.open(player, rigName, rigManager,viewRigsInventory);
         });
 
         // Rename button
@@ -100,7 +100,7 @@ public class EditGuardInventory {
         gui.addItem(14, rename);
         gui.setClickAction(14, (p, e) -> {
             MsgManager.send(p, "Renaming guard: " + name);
-
+            p.closeInventory();
             ChatPromptManager promptManager = new ChatPromptManager(RigPlugin.getInstance());
             promptManager.promptPlayer(p, "Enter a new name for this guard:", input -> {
                 guard.put("name", input);
@@ -109,8 +109,20 @@ public class EditGuardInventory {
 
                 MsgManager.send(p, "Guard renamed to: " + input);
 
-                open(player, rigName, guardIndex, rigManager);
+                open(player, rigName, guardIndex, rigManager,viewRigsInventory);
             });
+        });
+
+        // Back button
+        ItemStack back = GUIManager.createItem(Material.ARROW, "§eBack to Edit Rig");
+        ItemMeta backMeta = back.getItemMeta();
+        if (backMeta != null) {
+            backMeta.setLore(List.of("Click to go back to editing this rig"));
+            back.setItemMeta(backMeta);
+        }
+        gui.addItem(45, back);
+        gui.setClickAction(45, (p, e) -> {
+            ViewGuardsInventory.open(p,rigName, rigManager,viewRigsInventory);
         });
 
 

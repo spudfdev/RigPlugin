@@ -1,7 +1,7 @@
 package me.kakaroot.rigPlugin;
 
 import me.kakaroot.rigPlugin.commands.RigCommand;
-import me.kakaroot.rigPlugin.listeners.ChestBreakListener;
+import me.kakaroot.rigPlugin.listeners.RigBreakListener;
 import me.kakaroot.rigPlugin.listeners.WandListener;
 import me.kakaroot.rigPlugin.managers.*;
 import org.bukkit.plugin.PluginManager;
@@ -23,7 +23,7 @@ public final class RigPlugin extends JavaPlugin {
         instance = this;
         initConfig();
         initManagers();
-        initScheduler(); // Initialize scheduler safely
+        initScheduler();
         initCommands();
         initListeners();
         logStartup();
@@ -43,6 +43,7 @@ public final class RigPlugin extends JavaPlugin {
     private void initManagers() {
         this.rigManager = new RigManager(this);
         this.heistManager = new HeistManager(this);
+        heistManager.startGuardWatcher();
         MsgManager.init(this);
     }
 
@@ -51,7 +52,7 @@ public final class RigPlugin extends JavaPlugin {
             this.heistScheduler.cancel();
         }
         this.heistScheduler = new HeistScheduler(this);
-        this.heistScheduler.start(); // safely start scheduler
+        this.heistScheduler.start();
     }
 
     private void initCommands() {
@@ -62,7 +63,7 @@ public final class RigPlugin extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new WandListener(this), this);
         pm.registerEvents(GUIManager.getListener(), this);
-        pm.registerEvents(new ChestBreakListener(this),this);
+        pm.registerEvents(new RigBreakListener(this),this);
     }
 
     private void logStartup() {

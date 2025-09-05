@@ -1,9 +1,7 @@
 package me.kakaroot.rigPlugin.managers;
 
 import me.kakaroot.rigPlugin.RigPlugin;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.Directional;
@@ -11,23 +9,73 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 public class HeistManager {
 
     private final RigPlugin plugin;
     private final Random random = new Random();
+    private final NamespacedKey guardKey;
 
     public HeistManager(RigPlugin plugin) {
         this.plugin = plugin;
+        this.guardKey = new NamespacedKey(plugin, "rig_guard");
     }
 
+    public void startGuardWatcher() {
+        int taskId = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            boolean guardsStay = plugin.getConfig().getBoolean("heists.guards-stay-at-rig", true);
+            if (!guardsStay) return;
+
+            double guardRadius = plugin.getConfig().getDouble("heists.guard-radius", 10.0); // max distance from chest
+            double moveSpeed = 0.5;
+
+            for (World world : Bukkit.getWorlds()) {
+                for (LivingEntity entity : world.getLivingEntities()) {
+                    String rigName = entity.getPersistentDataContainer().get(guardKey, PersistentDataType.STRING);
+                    if (rigName == null) continue;
+
+                    List<Location> chestLocations = plugin.getRigManager().getChests(rigName);
+                    if (chestLocations.isEmpty()) continue;
+
+                    Location guardLoc = entity.getLocation();
+                    Location nearestChest = chestLocations.get(0);
+                    double nearestDistanceSq = guardLoc.distanceSquared(nearestChest);
+
+                    for (Location chestLoc : chestLocations) {
+                        double distSq = guardLoc.distanceSquared(chestLoc);
+                        if (distSq < nearestDistanceSq) {
+                            nearestChest = chestLoc;
+                            nearestDistanceSq = distSq;
+                        }
+                    }
+
+                    if (guardLoc.distance(nearestChest) > guardRadius) {
+                        @NotNull Vector direction = nearestChest.toVector().subtract(guardLoc.toVector()).normalize();
+                        entity.setVelocity(direction.multiply(moveSpeed));
+                    }
+                }
+            }
+        }, 0L, 2L).getTaskId();
+    }
     public void startHeist(String rigName) {
+        int onlinePlayers = Bukkit.getOnlinePlayers().size();
+        int minPlayers = plugin.getConfig().getInt("heists.min-players", 1);
+        boolean respawnGuards = plugin.getConfig().getBoolean("respawn-guards", true);
+
+        if (onlinePlayers < minPlayers) {
+            plugin.getLogger().info("Not enough players to start heist for rig: " + rigName);
+            return;
+        }
+
         List<Location> chests = plugin.getRigManager().getChests(rigName);
         int guardCount = plugin.getRigManager().getGuardCount(rigName);
         int guardRadius = plugin.getRigManager().getGuardRadius(rigName);
         Map<String, List<String>> lootTable = plugin.getRigManager().getLoot(rigName);
-
 
         for (Location chestLoc : chests) {
             BlockFace facing = BlockFace.NORTH;
@@ -36,7 +84,6 @@ public class HeistManager {
             }
 
             chestLoc.getBlock().setType(Material.CHEST);
-
             if (chestLoc.getBlock().getBlockData() instanceof Directional newDirectional) {
                 newDirectional.setFacing(facing);
                 chestLoc.getBlock().setBlockData(newDirectional);
@@ -45,44 +92,43 @@ public class HeistManager {
             Chest chest = (Chest) chestLoc.getBlock().getState();
             Inventory inv = chest.getBlockInventory();
             inv.clear();
-
             populateLoot(inv, lootTable);
 
-            spawnGuards(chestLoc, guardCount, guardRadius,rigName);
+            if (respawnGuards) {
+                removeGuards(rigName);
+            }
+
+            spawnGuards(chestLoc, guardCount, guardRadius, rigName);
+        }
+
+        Bukkit.broadcastMessage(MsgManager.colourise(
+                MsgManager.prefix + "&6Rig: &a" + rigName + "&6 has started."
+        ));
+    }
+
+    private void removeGuards(String rigName) {
+        for (World world : Bukkit.getWorlds()) {
+            List<LivingEntity> toRemove = new ArrayList<>();
+
+            for (LivingEntity entity : world.getLivingEntities()) {
+                String tag = entity.getPersistentDataContainer().get(guardKey, PersistentDataType.STRING);
+                if (rigName.equals(tag)) {
+                    toRemove.add(entity);
+                }
+            }
+
+            for (LivingEntity guard : toRemove) {
+                plugin.getLogger().info("Removing guard for rig: " + rigName + " at " + guard.getLocation());
+                guard.remove();
+            }
         }
     }
 
-
-    private void populateLoot(Inventory inv, Map<String, List<String>> lootTable) {
-        lootTable.forEach((rarity, items) -> {
-            for (String s : items) {
-                try {
-                    String[] parts = s.split(":");
-                    String matName = parts[0];
-                    int min = Integer.parseInt(parts[1].split("-")[0]);
-                    int max = parts[1].contains("-") ? Integer.parseInt(parts[1].split("-")[1]) : min;
-                    int amount = random.nextInt(max - min + 1) + min;
-
-                    Material mat = Material.getMaterial(matName.toUpperCase());
-                    if (mat == null) {
-                        System.out.println("Invalid material: " + matName);
-                        continue;
-                    }
-
-                    ItemStack item = new ItemStack(mat, amount);
-                    inv.addItem(item);
-                } catch (Exception e) {
-                    System.out.println("Error parsing loot string: " + s);
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-
     private void spawnGuards(Location center, int count, int radius, String rigName) {
         World world = center.getWorld();
-        List<Map<?, ?>> templates = plugin.getRigManager().getGuardTemplates(rigName);
+        if (world == null) return;
+
+        List<Map<String, Object>> templates = plugin.getRigManager().getGuardTemplates(rigName);
 
         for (int i = 0; i < count; i++) {
             double dx = (random.nextDouble() * 2 - 1) * radius;
@@ -98,12 +144,18 @@ public class HeistManager {
             String weaponStr = (String) template.getOrDefault("weapon", null);
 
             EntityType type = EntityType.valueOf(typeStr.toUpperCase());
-            if (!type.isAlive()) type = EntityType.ZOMBIE; // fallback
+            if (!type.isAlive()) type = EntityType.ZOMBIE;
 
             LivingEntity guard = (LivingEntity) world.spawnEntity(spawnLoc, type);
             guard.setCustomName(name);
             guard.setCustomNameVisible(true);
 
+            // Tag the entity
+            guard.getPersistentDataContainer().set(guardKey, PersistentDataType.STRING, rigName);
+
+            plugin.getLogger().info("Spawned guard for rig: " + rigName + " at " + guard.getLocation() + " with tag " + guard.getPersistentDataContainer().get(guardKey, PersistentDataType.STRING));
+
+            // Equip armour
             for (String armourMat : armourList) {
                 Material mat = Material.getMaterial(armourMat.toUpperCase());
                 if (mat == null) continue;
@@ -123,5 +175,28 @@ public class HeistManager {
         }
     }
 
-}
+    private void populateLoot(Inventory inv, Map<String, List<String>> lootTable) {
+        lootTable.forEach((rarity, items) -> {
+            for (String s : items) {
+                try {
+                    String[] parts = s.split(":");
+                    String matName = parts[0];
+                    int min = Integer.parseInt(parts[1].split("-")[0]);
+                    int max = parts[1].contains("-") ? Integer.parseInt(parts[1].split("-")[1]) : min;
+                    int amount = random.nextInt(max - min + 1) + min;
 
+                    Material mat = Material.getMaterial(matName.toUpperCase());
+                    if (mat == null) {
+                        plugin.getLogger().warning("Invalid material: " + matName);
+                        continue;
+                    }
+
+                    inv.addItem(new ItemStack(mat, amount));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("Error parsing loot string: " + s);
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+}

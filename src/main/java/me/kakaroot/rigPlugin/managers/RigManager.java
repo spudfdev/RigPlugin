@@ -3,6 +3,7 @@ package me.kakaroot.rigPlugin.managers;
 import me.kakaroot.rigPlugin.RigPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -21,7 +22,6 @@ public class RigManager {
         rigsConfig = YamlConfiguration.loadConfiguration(rigsFile);
     }
 
-    // Temporary selection for admins
     public void addChest(UUID playerId, Location loc) {
         chestSelections.computeIfAbsent(playerId, k -> new ArrayList<>()).add(loc);
     }
@@ -30,15 +30,12 @@ public class RigManager {
         return chestSelections.getOrDefault(playerId, Collections.emptyList()).size();
     }
 
-    // In saveRig(), add a default frequency if not set yet
     private void setDefaultFrequencyIfMissing(String rigName) {
         if (rigsConfig.get("rigs." + rigName + ".frequency") == null) {
-            // Example default: 60 minutes
             rigsConfig.set("rigs." + rigName + ".frequency", 60);
         }
     }
 
-    // Call it in saveRig
     public void saveRig(UUID playerId, String rigName) {
         List<Location> chests = chestSelections.getOrDefault(playerId, Collections.emptyList());
         List<String> chestStrings = new ArrayList<>();
@@ -53,12 +50,10 @@ public class RigManager {
         chestSelections.remove(playerId);
     }
 
-    // Getter for frequency
     public int getFrequency(String rigName) {
-        return rigsConfig.getInt("rigs." + rigName + ".frequency", 60); // default 60 if missing
+        return rigsConfig.getInt("rigs." + rigName + ".frequency", 60);
     }
 
-    // Setter to change frequency later
     public void setFrequency(String rigName, int minutes) {
         rigsConfig.set("rigs." + rigName + ".frequency", minutes);
         saveConfig();
@@ -68,15 +63,11 @@ public class RigManager {
         if (rigsConfig.getConfigurationSection("rigs." + oldRigName) == null) {
             return;
         }
-
         Map<String, Object> oldData = rigsConfig.getConfigurationSection("rigs." + oldRigName).getValues(true);
-
         for (Map.Entry<String, Object> entry : oldData.entrySet()) {
             rigsConfig.set("rigs." + newRigName + "." + entry.getKey(), entry.getValue());
         }
-
         rigsConfig.set("rigs." + oldRigName, null);
-
         saveConfig();
     }
 
@@ -113,7 +104,6 @@ public class RigManager {
         }
     }
 
-    // Get chest locations for a rig
     public List<Location> getChests(String rigName) {
         List<String> list = rigsConfig.getStringList("rigs." + rigName + ".chests");
         List<Location> locs = new ArrayList<>();
@@ -142,6 +132,14 @@ public class RigManager {
     private String serialize(Location loc) {
         return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
     }
+
+    public void reload() throws IOException, InvalidConfigurationException {
+        if (!rigsFile.exists()) {
+            RigPlugin.getInstance().saveResource("rigs.yml", false);
+        }
+        rigsConfig.load(rigsFile);
+    }
+
 
     public Location deserialize(String s) {
         String[] parts = s.split(",");
@@ -191,12 +189,13 @@ public class RigManager {
         saveConfig();
     }
 
-    public List<Map<?, ?>> getGuardTemplates(String rigName) {
-        List<Map<?, ?>> list = new ArrayList<>();
+    public List<Map<String, Object>> getGuardTemplates(String rigName) {
+        List<Map<String, Object>> list = new ArrayList<>();
         if (rigsConfig.contains("rigs." + rigName + ".guards.templates")) {
-            list = rigsConfig.getMapList("rigs." + rigName + ".guards.templates");
+            for (Map<?, ?> m : rigsConfig.getMapList("rigs." + rigName + ".guards.templates")) {
+                list.add(new HashMap<>((Map<String, Object>) m));
+            }
         } else {
-            // default single template
             Map<String, Object> defaultTemplate = new HashMap<>();
             defaultTemplate.put("type", "ZOMBIE");
             defaultTemplate.put("name", "Guard");
@@ -204,18 +203,16 @@ public class RigManager {
             defaultTemplate.put("weapon", "IRON_SWORD");
             list.add(defaultTemplate);
 
-            // save defaults to config
             rigsConfig.set("rigs." + rigName + ".guards.templates", list);
             saveConfig();
         }
         return list;
     }
 
-    // Update a single guard template
+
     public void updateGuardTemplate(String rigName, int index, Map<String, Object> newTemplate) {
         List<Map<String, Object>> templates = new ArrayList<>();
 
-        // Convert existing templates to proper type
         for (Map<?, ?> m : getGuardTemplates(rigName)) {
             templates.add(new HashMap<>((Map<String, Object>) m));
         }
@@ -227,13 +224,11 @@ public class RigManager {
         }
     }
 
-    // Remove a single guard template
     public void removeGuardTemplate(String rigName, int index) {
         List<Map<String, Object>> templates = new ArrayList<>();
         for (Map<?, ?> m : getGuardTemplates(rigName)) {
             templates.add(new HashMap<>((Map<String, Object>) m));
         }
-
         if (index >= 0 && index < templates.size()) {
             templates.remove(index);
             rigsConfig.set("rigs." + rigName + ".guards.templates", templates);
@@ -241,7 +236,24 @@ public class RigManager {
         }
     }
 
+    public void addGuardTemplate(String rigName, Map<String, Object> newTemplate) {
+        List<Map<String, Object>> templates = new ArrayList<>();
+        for (Map<?, ?> m : getGuardTemplates(rigName)) {
+            templates.add(new HashMap<>((Map<String, Object>) m));
+        }
+        templates.add(newTemplate);
+        rigsConfig.set("rigs." + rigName + ".guards.templates", templates);
+        saveConfig();
+    }
 
+    public void setGuardCount(String rigName, int count) {
+        rigsConfig.set("rigs." + rigName + ".guards.count", Math.max(0, count));
+        saveConfig();
+    }
 
+    public void setGuardRadius(String rigName, int radius) {
+        rigsConfig.set("rigs." + rigName + ".guards.radius", Math.max(0, radius));
+        saveConfig();
+    }
 
 }

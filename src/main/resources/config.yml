@@ -1,1 +1,11 @@
+# Plugin prefix for messages
 prefix: "&6[RigPlugin]"
+
+# Heist settings
+respawn-guards: true            # Should guards respawn after being killed?
+guards-stay-at-rig: true        # Should guards stay close to their rig chests?
+rigs-indestructible: false       # Are rig chests indestructible?
+
+# Player requirements
+require-min-players: false      # Require a minimum number of players to start a heist?
+min-players: 5                  # Minimum players needed if enabled

@@ -19,7 +19,8 @@ public class HeistScheduler {
     public void start() {
         if (taskId != -1) return;
 
-        taskId = Bukkit.getScheduler().runTaskTimer(plugin, this::startScheduledHeists, 0L, 20L * 60).getTaskId();
+        taskId = Bukkit.getScheduler().runTaskTimer
+                (plugin, this::startScheduledHeists, 0L, 20L * 5).getTaskId();
     }
 
     public void cancel() {
@@ -30,6 +31,12 @@ public class HeistScheduler {
     }
 
     private void startScheduledHeists() {
+        if (plugin.getConfig().getBoolean("heists.require-min-players")) {
+            int minPlayers = plugin.getConfig().getInt("heists.min-players", 1);
+            if (Bukkit.getOnlinePlayers().size() < minPlayers) {
+                return;
+            }
+        }
         plugin.getRigManager().getAllRigNames().forEach(rigName -> {
             int frequency = plugin.getRigManager().getFrequency(rigName);
             long lastStarted = lastStartedMap.getOrDefault(rigName, 0L);
@@ -42,4 +49,5 @@ public class HeistScheduler {
             }
         });
     }
+
 }

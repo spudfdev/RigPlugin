@@ -13,7 +13,7 @@ import java.util.*;
 
 public class LootEditorInventory {
 
-    public static void open(Player player, String rigName, RigManager rigManager) {
+    public static void open(Player player, String rigName, RigManager rigManager, ViewRigsInventory viewRigsInventory) {
         UUID uuid = player.getUniqueId();
         GUIManager gui = new GUIManager("Edit Loot for " + rigName, 6, uuid);
 
@@ -49,7 +49,6 @@ public class LootEditorInventory {
 
                 final String currentEntry = lootString;
 
-                // Set click actions for editing/removing
                 gui.setClickAction(slot, (p, e) -> {
                     int min, max;
                     try {
@@ -67,7 +66,7 @@ public class LootEditorInventory {
                     boolean updated = false;
 
                     if (e.getClick() == ClickType.LEFT) {
-                        if (min < max) { // only allow increasing if min < max
+                        if (min < max) {
                             min++;
                             updated = true;
                         }
@@ -83,7 +82,7 @@ public class LootEditorInventory {
                     } else if (e.getClick() == ClickType.DROP) {
                         rigManager.removeLoot(rigName, rarity, currentEntry);
                         MsgManager.send(p,"&cRemoved " + matName + " from " + rarity + " loot.");
-                        open(player, rigName, rigManager);
+                        open(player, rigName, rigManager,viewRigsInventory);
                         return;
                     }
 
@@ -95,7 +94,7 @@ public class LootEditorInventory {
                         rigManager.updateLoot(rigName, rarity, list);
 
                         MsgManager.send(p,"&aUpdated " + matName + " to " + min + "-" + max);
-                        open(player, rigName,rigManager); // refresh
+                        open(player, rigName,rigManager,viewRigsInventory); // refresh
                     }
                 });
 
@@ -113,9 +112,23 @@ public class LootEditorInventory {
                 String entry = cursor.getType().name() + ":1-1";
                 rigManager.addLoot(rigName, "common", entry);
                 MsgManager.send(p,"&aAdded " + cursor.getType().name() + " to loot!");
-                open(player, rigName, rigManager); // refresh
+                open(player, rigName, rigManager,viewRigsInventory);
             }
         });
+
+        // Back button
+        ItemStack back = GUIManager.createItem(Material.ARROW, "§eBack to Edit Rig");
+        ItemMeta backMeta = back.getItemMeta();
+        if (backMeta != null) {
+            backMeta.setLore(List.of("Click to go back to editing this rig"));
+            back.setItemMeta(backMeta);
+        }
+        gui.addItem(45, back);
+        gui.setClickAction(45, (p, e) -> {
+            EditRigInventory editRig = new EditRigInventory(rigManager, viewRigsInventory);
+            editRig.open(p, rigName);
+        });
+
 
         gui.open(player);
     }

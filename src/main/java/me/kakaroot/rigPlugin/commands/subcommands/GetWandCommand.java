@@ -44,7 +44,7 @@ public class GetWandCommand implements SubCommand {
         ItemStack wand = new ItemStack(Material.BLAZE_ROD);
         ItemMeta meta = wand.getItemMeta();
         meta.setDisplayName(MsgManager.colourise("&6Rig Wand"));
-        meta.setLore(Arrays.asList("&7Left Click = Mark Chest", "Shift-Right Click = Open Menu"));
+        meta.setLore(Arrays.asList(MsgManager.colourise("&7Left Click = Mark Chest"), MsgManager.colourise("Shift-Right Click = Open Menu")));
         wand.setItemMeta(meta);
         return wand;
     }

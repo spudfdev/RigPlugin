@@ -29,14 +29,18 @@ public class ChatPromptManager {
             @Override
             public Prompt acceptInput(ConversationContext context, String input) {
                 if (input.equalsIgnoreCase("cancel")) {
-                    context.getForWhom().sendRawMessage("Conversation cancelled.");
-                } else {
-                    Bukkit.getScheduler().runTask(plugin, () -> callback.accept(input));
+                    if (context.getForWhom() instanceof Player p) {
+                        MsgManager.send(p,"&fInput Cancelled.");
+                    } else {
+                        context.getForWhom().sendRawMessage("Input Cancelled.");
+                    }
+                    return Prompt.END_OF_CONVERSATION;
                 }
-                return END_OF_CONVERSATION;
+
+                Bukkit.getScheduler().runTask(plugin, () -> callback.accept(input));
+                return Prompt.END_OF_CONVERSATION;
             }
         }).buildConversation(player);
-
         convo.begin();
     }
 }
