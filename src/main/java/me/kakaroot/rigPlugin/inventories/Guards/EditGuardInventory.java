@@ -58,7 +58,7 @@ public class EditGuardInventory {
 
             guard.put("type", newType);
             rigManager.updateGuardTemplate(rigName, guardIndex, guard);
-            open(player, rigName, guardIndex, rigManager,viewRigsInventory); // refresh
+            open(player, rigName, guardIndex, rigManager,viewRigsInventory);
         });
 
         // Change weapon button

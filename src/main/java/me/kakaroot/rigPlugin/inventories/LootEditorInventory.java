@@ -94,7 +94,7 @@ public class LootEditorInventory {
                         rigManager.updateLoot(rigName, rarity, list);
 
                         MsgManager.send(p,"&aUpdated " + matName + " to " + min + "-" + max);
-                        open(player, rigName,rigManager,viewRigsInventory); // refresh
+                        open(player, rigName,rigManager,viewRigsInventory);
                     }
                 });
 

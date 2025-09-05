@@ -56,7 +56,6 @@ public class ViewRigsInventory {
                     heistManager.startHeist(rigName);
                 } else if (click.isRightClick()) {
                     if (click == ClickType.SHIFT_RIGHT) {
-                        // Warp to first chest
                         if (!rigManager.getChests(rigName).isEmpty()) {
                             p.teleport(rigManager.getChests(rigName).getFirst());
                             MsgManager.send(p,"§aWarped to rig: " + rigName);

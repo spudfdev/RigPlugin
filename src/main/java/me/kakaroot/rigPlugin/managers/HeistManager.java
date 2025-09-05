@@ -31,7 +31,7 @@ public class HeistManager {
             boolean guardsStay = plugin.getConfig().getBoolean("heists.guards-stay-at-rig", true);
             if (!guardsStay) return;
 
-            double guardRadius = plugin.getConfig().getDouble("heists.guard-radius", 10.0); // max distance from chest
+            double guardRadius = plugin.getConfig().getDouble("heists.guard-radius", 10.0);
             double moveSpeed = 0.5;
 
             for (World world : Bukkit.getWorlds()) {
